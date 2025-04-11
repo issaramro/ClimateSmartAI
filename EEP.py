@@ -42,6 +42,8 @@ model1 = MultiOutputLSTM(input_size, hidden_size, num_layers, output_size)
 model1.load_state_dict(torch.load("multi_output_lstm.pth", map_location=torch.device('cpu')))
 model1.eval()
 
+model2 = joblib.load("drought_model.pkl")
+model3 = joblib.load("water_availability_model.pkl")
 
 # Request model
 class DateRequest(BaseModel):
@@ -63,21 +65,25 @@ def predict(request: DateRequest):
             raise HTTPException(status_code=404, detail="Date not found in historical data.")
         values = record[selected_features].values.flatten()
 
-        # drought_class = predict_drought_from_vector(model2, values)
+        drought_class = predict_drought_from_vector(model2, values)
         # water_result = predict_water_availability(model3, values)
 
-        # label_map = {
-        #     0: "No Drought",
-        #     1: "Moderate Drought",
-        #     2: "Severe Drought",
-        #     3: "Extreme Drought"
-        # }
-
-
-        return {features_names[i]: float(values[i]) for i in range(len(features_names))
-            # "drought_label": label_map[drought_class]
-            # "prediction": water_result
+        label_map = {
+            0: "No Drought",
+            1: "Moderate Drought",
+            2: "Severe Drought",
+            3: "Extreme Drought"
         }
+
+
+        return {
+            **{features_names[i]: float(values[i]) for i in range(len(features_names))},
+            "drought_class": drought_class,
+            "drought_label": label_map[drought_class]
+            # "prediction": water_result
+            }
+
+        # return {features_names[i]: float(values[i]) for i in range(len(features_names))}
     
 
     else:
@@ -94,20 +100,23 @@ def predict(request: DateRequest):
         # Get final prediction (scaled → inverse transform)
         final_prediction = scaler.inverse_transform(hist_scaled[-1].reshape(1, -1)).flatten()
 
-        # drought_class = predict_drought_from_vector(model2, final_prediction)
+        drought_class = predict_drought_from_vector(model2, final_prediction)
         # water_result = predict_water_availability(model3, final_prediction)
 
-        # label_map = {
-        #     0: "No Drought",
-        #     1: "Moderate Drought",
-        #     2: "Severe Drought",
-        #     3: "Extreme Drought"
-        # }
-
-        return {features_names[i]: float(final_prediction[i]) for i in range(len(features_names))
-            # "drought_label": label_map[drought_class]
-            # "prediction": water_result
+        label_map = {
+            0: "No Drought",
+            1: "Moderate Drought",
+            2: "Severe Drought",
+            3: "Extreme Drought"
         }
+
+        return {
+            **{features_names[i]: float(final_prediction[i]) for i in range(len(features_names))},
+            "drought_class": drought_class,
+            "drought_label": label_map[drought_class]
+            # "prediction": water_result
+            }
+        #return {features_names[i]: float(final_prediction[i]) for i in range(len(features_names))}
 
 #uvicorn EEP:app --reload
 
