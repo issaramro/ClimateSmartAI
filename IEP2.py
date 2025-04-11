@@ -10,15 +10,12 @@ def classify_drought(pdsi):
     else:
         return 0  # No drought
     
+
 def predict_drought_from_vector(model, input_vector):
-    
     if len(input_vector) != 14:
         raise ValueError("Input vector must contain exactly 14 features.")
-
-    # Remove the 3rd feature (index 2)
+    
+    # Remove the 3rd feature (index 2: pet)
     selected_features = np.delete(input_vector, 2).reshape(1, -1)
-
-    # Predict the drought class
     prediction = model.predict(selected_features)[0]
-
     return int(prediction)

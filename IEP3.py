@@ -18,20 +18,19 @@ def classify_water_availability(row):
     
 # Prediction logic
 def predict_water_availability(model, input_vector):
-    if len(input_vector) != 14:
-        raise ValueError("Input vector must contain exactly 14 features.")
-    
-    # Indices to remove: ["aet", "pet", "pr", "ro", "soil", "swe"]
-    indices_to_remove = [0, 3, 4, 5, 6, 8]
-    reduced_vector = np.delete(input_vector, indices_to_remove)
-    
-    # Predict
-    input_df = pd.DataFrame([reduced_vector])
-    prediction = model.predict(input_df)[0]
-
-    if prediction == 0:
-        return "No irrigation needed"
-    elif prediction == 1:
-        return "Mild irrigation need"
-    else:
-        return "Severe irrigation need"
+     if len(input_vector) != 14:
+         raise ValueError("Input vector must contain exactly 14 features.")
+     
+     # Indices to remove: ["aet", "pet", "pr", "ro", "soil", "swe"]
+     indices_to_remove = [0, 3, 4, 5, 6, 8]
+     reduced_vector = np.delete(input_vector, indices_to_remove)
+     
+     # Predict
+     prediction = model.predict(reduced_vector)[0]
+ 
+     if prediction == 0:
+         return "No irrigation needed"
+     elif prediction == 1:
+         return "Mild irrigation need"
+     else:
+         return "Severe irrigation need"
