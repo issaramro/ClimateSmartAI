@@ -1,10 +1,16 @@
-import joblib
 import numpy as np
 
-# Load the trained drought classification model
-model = joblib.load("drought_model.pkl")
-
-def predict_drought_from_vector(input_vector):
+def classify_drought(pdsi):
+    if pdsi <= -4:
+        return 3  # Extreme drought
+    elif pdsi <= -3:
+        return 2  # Severe drought
+    elif pdsi <= -2:
+        return 1  # Moderate drought
+    else:
+        return 0  # No drought
+    
+def predict_drought_from_vector(model, input_vector):
     
     if len(input_vector) != 14:
         raise ValueError("Input vector must contain exactly 14 features.")
