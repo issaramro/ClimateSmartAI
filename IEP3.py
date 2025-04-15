@@ -26,7 +26,7 @@ def predict_water_availability(model, input_vector):
      reduced_vector = np.delete(input_vector, indices_to_remove)
      
      # Predict
-     prediction = model.predict(reduced_vector)[0]
+     prediction = model.predict(reduced_vector.reshape(1,-1))[0]
  
      if prediction == 0:
          return "No irrigation needed"

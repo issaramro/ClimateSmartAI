@@ -66,7 +66,7 @@ def predict(request: DateRequest):
         values = record[selected_features].values.flatten()
 
         drought_class = predict_drought_from_vector(model2, values)
-        # water_result = predict_water_availability(model3, values)
+        water_result = predict_water_availability(model3, values)
 
         label_map = {
             0: "No Drought",
@@ -75,17 +75,19 @@ def predict(request: DateRequest):
             3: "Extreme Drought"
         }
 
-
-        return {
+        if drought_class == 3 or drought_class == 2:
+            return {
             **{features_names[i]: float(values[i]) for i in range(len(features_names))},
-            "drought_class": drought_class,
-            "drought_label": label_map[drought_class]
-            # "prediction": water_result
+            "Drought condition": label_map[drought_class],
+            "Irrigation prediction": "Severe irrigation need"
             }
-
-        # return {features_names[i]: float(values[i]) for i in range(len(features_names))}
+        else:
+            return {
+            **{features_names[i]: float(values[i]) for i in range(len(features_names))},
+            "Drought condition": label_map[drought_class],
+            "Irrigation prediction": water_result
+            }
     
-
     else:
         # Use model to predict into the future
         future_months = pd.date_range(start=last_date + pd.DateOffset(months=1), end=target_date, freq="MS")
@@ -101,7 +103,7 @@ def predict(request: DateRequest):
         final_prediction = scaler.inverse_transform(hist_scaled[-1].reshape(1, -1)).flatten()
 
         drought_class = predict_drought_from_vector(model2, final_prediction)
-        # water_result = predict_water_availability(model3, final_prediction)
+        water_result = predict_water_availability(model3, final_prediction)
 
         label_map = {
             0: "No Drought",
@@ -110,13 +112,19 @@ def predict(request: DateRequest):
             3: "Extreme Drought"
         }
 
-        return {
+        if drought_class == 3 or drought_class == 2:
+            return {
             **{features_names[i]: float(final_prediction[i]) for i in range(len(features_names))},
-            "drought_class": drought_class,
-            "drought_label": label_map[drought_class]
-            # "prediction": water_result
+            "Drought condition": label_map[drought_class],
+            "Irrigation prediction": "Severe irrigation need"
             }
-        #return {features_names[i]: float(final_prediction[i]) for i in range(len(features_names))}
+        else:
+            return {
+            **{features_names[i]: float(final_prediction[i]) for i in range(len(features_names))},
+            "Drought condition": label_map[drought_class],
+            "Irrigation prediction": water_result
+            }
+
 
 #uvicorn EEP:app --reload
 
