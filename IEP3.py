@@ -30,7 +30,5 @@ def predict_water_availability(model, input_vector):
  
      if prediction == 0:
          return "No irrigation needed"
-     elif prediction == 1:
-         return "Mild irrigation needed"
      else:
-         return "Severe irrigation needed"
+         return "Irrigation needed"
