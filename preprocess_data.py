@@ -2,7 +2,6 @@ import pandas as pd
 
 # Define file paths
 input_file = "Lebanon_BH_Climate_Data_1975_2024.csv"
-output_file = "cleaned_data.csv"
 
 # Load dataset
 df = pd.read_csv(input_file)
@@ -23,18 +22,22 @@ scaling_factors = {
 # Apply scaling using vectorized operations
 for col, factor in scaling_factors.items():
     if col in df_selected.columns:
-        df_selected[col] *= factor  # Scale efficiently
+        df_selected[col] *= factor
 
 # Ensure the date column is the first column in the dataset
 if date_col in df.columns and date_col not in df_selected.columns:
     df_selected.insert(0, date_col, df[date_col])
 
+# Convert date column to datetime
+df_selected[date_col] = pd.to_datetime(df_selected[date_col])
 
-# Check for missing values
-print("Missing values per column:\n", df_selected.isnull().sum())
+# Split data into train (before 2024) and test (Jan–Dec 2024)
+test_df = df_selected[(df_selected[date_col] >= "2024-01-01") & 
+                      (df_selected[date_col] <= "2024-12-01")]
+train_df = df_selected[df_selected[date_col] < "2024-01-01"]
 
-# Save cleaned data
-df_selected.to_csv(output_file, index=False)
-print(f"✅ Cleaned dataset saved to {output_file}")
+# Save to CSVs
+train_df.to_csv("training_data.csv", index=False)
+test_df.to_csv("testing_data.csv", index=False)
 
-print(df_selected.head())
+print("✅ Training and testing datasets saved.")

@@ -79,7 +79,7 @@ def predict(request: DateRequest):
             return {
             **{features_names[i]: float(values[i]) for i in range(len(features_names))},
             "Drought condition": label_map[drought_class],
-            "Irrigation prediction": "Severe irrigation need"
+            "Irrigation prediction": "Severe irrigation needed"
             }
         else:
             return {
@@ -116,7 +116,7 @@ def predict(request: DateRequest):
             return {
             **{features_names[i]: float(final_prediction[i]) for i in range(len(features_names))},
             "Drought condition": label_map[drought_class],
-            "Irrigation prediction": "Severe irrigation need"
+            "Irrigation prediction": "Severe irrigation needed"
             }
         else:
             return {
