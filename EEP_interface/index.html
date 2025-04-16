@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EEP - Forecast Tool</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; max-width: 700px; margin: auto; }
+    label, input, button { display: block; margin: 10px 0; }
+    .result { margin-top: 2rem; background: #f9f9f9; padding: 1rem; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Environmental Forecast</h1>
+
+  <label for="date">Enter Date (DD-MM-YYYY):</label>
+  <input type="text" id="date" placeholder="e.g. 01-07-2025" />
+  <button onclick="getForecast()">Submit</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    async function getForecast() {
+      const date = document.getElementById("date").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/Get Agricultural Variables & Factors/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ date })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          resultDiv.innerHTML = `<strong>Error:</strong> ${error.detail}`;
+          return;
+        }
+
+        const data = await response.json();
+        let output = `<h3>Drought Status: ${data["Drought condition"]}</h3>`;
+        output += `<h4>Irrigation Prediction: ${data["Irrigation prediction"]}</h4>`;
+        output += "<ul>";
+        for (const [key, value] of Object.entries(data)) {
+          if (key !== "Drought condition" && key !== "Irrigation prediction") {
+            output += `<li><strong>${key}:</strong> ${parseFloat(value).toFixed(2)}</li>`;
+          }
+        }
+        output += "</ul>";
+        resultDiv.innerHTML = output;
+
+      } catch (err) {
+        resultDiv.innerHTML = `Error: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>

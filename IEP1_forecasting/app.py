@@ -1,15 +1,12 @@
-from IEP1 import predict_next_step, MultiOutputLSTM
-from IEP2 import predict_drought_from_vector
-from IEP3 import predict_water_availability
-
-import pickle
-import numpy as np
-import torch
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 import pandas as pd
-import joblib
+import numpy as np
+import torch
+import torch.nn as nn
+import pickle
+from IEP1 import MultiOutputLSTM, create_sequences
 
 # Initialize app
 app = FastAPI()
@@ -38,18 +35,23 @@ hidden_size = 64
 num_layers = 2
 output_size = len(selected_features)
 
-model1 = MultiOutputLSTM(input_size, hidden_size, num_layers, output_size)
-model1.load_state_dict(torch.load("multi_output_lstm.pth", map_location=torch.device('cpu')))
-model1.eval()
+model = MultiOutputLSTM(input_size, hidden_size, num_layers, output_size)
+model.load_state_dict(torch.load("multi_output_lstm.pth", map_location=torch.device('cpu')))
+model.eval()
 
-model2 = joblib.load("drought_model.pkl")
-model3 = joblib.load("water_availability_model.pkl")
+# Helper function: Predict next step
+def predict_next_step(model, input_seq):
+    with torch.no_grad():
+        input_tensor = torch.tensor(input_seq, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
+        next_step = model(input_tensor)
+    return next_step.squeeze(0).numpy()  # Remove batch dimension
+
 
 # Request model
 class DateRequest(BaseModel):
     date: str  # Expected format: DD-MM-YYYY
 
-@app.post("/Get Agricultural Variables & Factors/")
+@app.post("/predict/")
 def predict(request: DateRequest):
     try:
         target_date = datetime.strptime(request.date, "%d-%m-%Y")
@@ -64,30 +66,8 @@ def predict(request: DateRequest):
         if record.empty:
             raise HTTPException(status_code=404, detail="Date not found in historical data.")
         values = record[selected_features].values.flatten()
+        return {features_names[i]: float(values[i]) for i in range(len(features_names))}
 
-        drought_class = predict_drought_from_vector(model2, values)
-        water_result = predict_water_availability(model3, values)
-
-        label_map = {
-            0: "No Drought",
-            1: "Moderate Drought",
-            2: "Severe Drought",
-            3: "Extreme Drought"
-        }
-
-        if drought_class == 3 or drought_class == 2:
-            return {
-            **{features_names[i]: float(values[i]) for i in range(len(features_names))},
-            "Drought condition": label_map[drought_class],
-            "Irrigation prediction": "Irrigation needed"
-            }
-        else:
-            return {
-            **{features_names[i]: float(values[i]) for i in range(len(features_names))},
-            "Drought condition": label_map[drought_class],
-            "Irrigation prediction": water_result
-            }
-    
     else:
         # Use model to predict into the future
         future_months = pd.date_range(start=last_date + pd.DateOffset(months=1), end=target_date, freq="MS")
@@ -96,35 +76,11 @@ def predict(request: DateRequest):
 
         for _ in future_months:
             next_input = hist_scaled[-60:]  # Last 60 entries
-            next_pred_scaled = predict_next_step(model1, next_input)
+            next_pred_scaled = predict_next_step(model, next_input)
             hist_scaled = np.vstack([hist_scaled, next_pred_scaled])
 
         # Get final prediction (scaled → inverse transform)
         final_prediction = scaler.inverse_transform(hist_scaled[-1].reshape(1, -1)).flatten()
+        return {features_names[i]: float(final_prediction[i]) for i in range(len(features_names))}
 
-        drought_class = predict_drought_from_vector(model2, final_prediction)
-        water_result = predict_water_availability(model3, final_prediction)
-
-        label_map = {
-            0: "No Drought",
-            1: "Moderate Drought",
-            2: "Severe Drought",
-            3: "Extreme Drought"
-        }
-
-        if drought_class == 3 or drought_class == 2:
-            return {
-            **{features_names[i]: float(final_prediction[i]) for i in range(len(features_names))},
-            "Drought condition": label_map[drought_class],
-            "Irrigation prediction": "Irrigation needed"
-            }
-        else:
-            return {
-            **{features_names[i]: float(final_prediction[i]) for i in range(len(features_names))},
-            "Drought condition": label_map[drought_class],
-            "Irrigation prediction": water_result
-            }
-
-
-#uvicorn EEP:app --reload
-
+# uvicorn IEP1_forecasting.app:app --reload
