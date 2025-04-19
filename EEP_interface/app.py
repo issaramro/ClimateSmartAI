@@ -1,24 +1,27 @@
-from IEP1_forecasting.IEP1 import predict_next_step, MultiOutputLSTM
-from IEP2_drought_assessment.IEP2 import predict_drought_from_vector
-from IEP3_water_availability.IEP3 import predict_water_availability
-
-import pickle
+import requests
 import numpy as np
-import torch
+import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
-import pandas as pd
-import joblib
 import os
+from fastapi.responses import HTMLResponse
 
-# Initialize app
-app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
 
-# Load data and model components
+app = FastAPI(title="Agricultural Variables & Factors")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You can restrict this to ["http://127.0.0.1:8004"] later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# Load data
 csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data_preprocessing', 'training_data.csv'))
-
-# Load the CSV
 df = pd.read_csv(csv_path)
 df["date"] = pd.to_datetime(df["date"])
 
@@ -32,29 +35,19 @@ features_names = [
 
 df_selected = df[["date"] + selected_features].copy()
 
-# Load scaler
-with open("IEP1_forecasting/model/scaler.pkl", "rb") as f:
-    scaler = pickle.load(f)
-
-# Load model
-input_size = len(selected_features)
-hidden_size = 64
-num_layers = 2
-output_size = len(selected_features)
-
-model1 = MultiOutputLSTM(input_size, hidden_size, num_layers, output_size)
-model1.load_state_dict(torch.load("IEP1_forecasting/model/multi_output_lstm.pth", map_location=torch.device('cpu')))
-model1.eval()
-
-model2 = joblib.load("IEP2_drought_assessment/model/drought_model.pkl")
-model3 = joblib.load("IEP3_water_availability/model/water_availability_model.pkl")
+label_map = {
+    0: "No Drought",
+    1: "Moderate Drought",
+    2: "Severe Drought",
+    3: "Extreme Drought"
+}
 
 # Request model
 class DateRequest(BaseModel):
     date: str  # Expected format: DD-MM-YYYY
 
-@app.post("/Get Agricultural Variables & Factors/")
-def predict(request: DateRequest):
+@app.post("/get_agricultural_variables_and_factors")
+def get_agricultural_variables_and_factors(request: DateRequest):
     try:
         target_date = datetime.strptime(request.date, "%d-%m-%Y")
     except ValueError:
@@ -63,81 +56,63 @@ def predict(request: DateRequest):
     last_date = df_selected["date"].max()
 
     if target_date <= last_date:
-        # Return real value from historical data
+        # Historical data
         record = df_selected[df_selected["date"] == target_date]
         if record.empty:
             raise HTTPException(status_code=404, detail="Date not found in historical data.")
-        values = record[selected_features].values.flatten()
+        values = record[selected_features].values.flatten().tolist()
 
-        drought_class = predict_drought_from_vector(model2, values)
-        water_result = predict_water_availability(model3, values)
+        # Sending request to IEP2 and IEP3 for prediction
+        try:
+            drought_response = requests.post("http://127.0.0.1:8002/assess_drought",  json={"values": values})
+            drought_class = drought_response.json()["drought_class"]
 
-        label_map = {
-            0: "No Drought",
-            1: "Moderate Drought",
-            2: "Severe Drought",
-            3: "Extreme Drought"
+            water_response = requests.post("http://127.0.0.1:8003/irrigation_need", json={"values": values})
+            water_result = water_response.json()["irrigation"]
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error communicating with IEPs: {e}")
+
+        result = {
+            **{features_names[i]: float(values[i]) for i in range(len(features_names))},
+            "Drought condition": label_map[drought_class],
+            "Irrigation prediction": "Irrigation needed" if drought_class in [2, 3] else water_result
         }
-
-        if drought_class == 3 or drought_class == 2:
-            return {
-                **{features_names[i]: float(values[i]) for i in range(len(features_names))},
-                "Drought condition": label_map[drought_class],
-                "Irrigation prediction": "Irrigation needed"
-            }
-        else:
-            return {
-                **{features_names[i]: float(values[i]) for i in range(len(features_names))},
-                "Drought condition": label_map[drought_class],
-                "Irrigation prediction": water_result
-            }
+        return result
 
     else:
-        # Use model to predict into the future
-        future_months = pd.date_range(start=last_date + pd.DateOffset(months=1), end=target_date, freq="MS")
-        hist_data = df_selected[selected_features].values[-60:]  # Last 5 years
-        hist_scaled = scaler.transform(hist_data)
+        # Send date to IEP1
+        response1 = requests.post("http://127.0.0.1:8001/get_features_values_at_date", json={"date": request.date})
+        iep1_output = response1.json()
 
-        for _ in future_months:
-            next_input = hist_scaled[-60:]  # Last 60 entries
-            next_pred_scaled = predict_next_step(model1, next_input)
-            hist_scaled = np.vstack([hist_scaled, next_pred_scaled])
+        # Convert to ordered list of values (same order as selected_features)
+        ordered_feature_keys = [
+            "Actual Evapotranspiration (mm)", "Climate Water Deficit (mm)", "Palmer Drought Severity Index",
+            "Reference Evapotranspiration (mm)", "Precipitation Accumulation (mm)", "Runoff (mm)", "Soil Moisture (mm)",
+            "Downward Surface Shortwave Radiation (W/m²)", "Snow Water Equivalent (mm)", "Minimum Temperature (°C)",
+            "Maximum Temperature (°C)", "Vapor Pressure (kPa)", "Vapor Pressure Deficit (kPa)", "Wind Speed at 10m (m/s)"
+        ]
 
-        # Get final prediction (scaled → inverse transform)
-        final_prediction = scaler.inverse_transform(hist_scaled[-1].reshape(1, -1)).flatten()
+        values_list = [iep1_output[key] for key in ordered_feature_keys]
 
-        drought_class = predict_drought_from_vector(model2, final_prediction)
-        water_result = predict_water_availability(model3, final_prediction)
+        # Send to IEP2 and IEP3
+        response2 = requests.post("http://127.0.0.1:8002/assess_drought", json={"values": values_list})
+        response3 = requests.post("http://127.0.0.1:8003/irrigation_need", json={"values": values_list})
 
-        label_map = {
-            0: "No Drought",
-            1: "Moderate Drought",
-            2: "Severe Drought",
-            3: "Extreme Drought"
+        drought_class = response2.json().get("drought_class")
+        irrigation_needed = response3.json().get("irrigation")
+
+        result = {
+            **{features_names[i]: float(values_list[i]) for i in range(len(features_names))},
+            "Drought condition": label_map[drought_class],
+            "Irrigation prediction": "Irrigation needed" if drought_class in [2, 3] else irrigation_needed
         }
-
-        if drought_class == 3 or drought_class == 2:
-            return {
-                **{features_names[i]: float(final_prediction[i]) for i in range(len(features_names))},
-                "Drought condition": label_map[drought_class],
-                "Irrigation prediction": "Irrigation needed"
-            }
-        else:
-            return {
-                **{features_names[i]: float(final_prediction[i]) for i in range(len(features_names))},
-                "Drought condition": label_map[drought_class],
-                "Irrigation prediction": water_result
-            }
-        
-from fastapi.responses import HTMLResponse
-
-@app.get("/", response_class=HTMLResponse)
-def serve_frontend():
-    html_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
-    with open(html_file_path, "r", encoding="utf-8") as f:
-        return f.read()
+        return result
 
 
+# @app.get("/", response_class=HTMLResponse)
+# def serve_frontend():
+#     html_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
+#     with open(html_file_path, "r", encoding="utf-8") as f:
+#         return f.read()
 
-
-# Run with: uvicorn EEP_interface.app:app --reload
+#  uvicorn EEP_interface.app:app --host 127.0.0.1 --port 8004 --reload
