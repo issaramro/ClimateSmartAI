@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'eep'
+    static_configs:
+      - targets: ['eep:8004']  # Scraping the EEP metrics endpoint

@@ -3,9 +3,25 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
-from IEP3_water_availability.IEP3 import classify_water_availability
 import os
 
+
+# Define water availability categories
+def classify_water_availability(row):
+    pr = row['pr']
+    soil = row['soil']
+    ro = row['ro']
+    aet = row['aet']
+    pet = row['pet']
+    swe = row['swe']
+
+    if pr > 50 and soil > 300 and swe > 0:
+        return 0  # No irrigation needed
+    elif 20 <= pr <= 50 and 100 <= soil <= 300 and 20 <= ro <= 200 and aet < pet:
+        return 1  # Mild irrigation need
+    else:
+        return 2  # Severe irrigation need
+    
 # Load the cleaned dataset
 base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 csv_path = os.path.join(base_path, 'data_preprocessing', 'training_data.csv')

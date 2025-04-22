@@ -5,9 +5,19 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import pickle
 from datetime import datetime
-from IEP1_forecasting.IEP1 import MultiOutputLSTM
 import os
 
+# Define LSTM Model
+class MultiOutputLSTM(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(MultiOutputLSTM, self).__init__()
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+    
+    def forward(self, x):
+        lstm_out, _ = self.lstm(x)
+        return self.fc(lstm_out[:, -1, :])
+    
 # Load the cleaned dataset
 base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 csv_path = os.path.join(base_path, 'data_preprocessing', 'training_data.csv')

@@ -1,10 +1,18 @@
 import pandas as pd
-import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 import joblib
 import os
-from IEP2_drought_assessment.IEP2 import classify_drought
 
+def classify_drought(pdsi):
+    if pdsi <= -4:
+        return 3  # Extreme drought
+    elif pdsi <= -3:
+        return 2  # Severe drought
+    elif pdsi <= -2:
+        return 1  # Moderate drought
+    else:
+        return 0  # No drought
+    
 # Load the cleaned dataset
 base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 csv_path = os.path.join(base_path, 'data_preprocessing', 'training_data.csv')

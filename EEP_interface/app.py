@@ -1,24 +1,28 @@
-import requests
-import numpy as np
-import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
+import requests
 import os
+import pandas as pd
 from fastapi.responses import HTMLResponse
-
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
+# Initialize FastAPI app
 app = FastAPI(title="Agricultural Variables & Factors")
 
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict this to ["http://127.0.0.1:8004"] later
+    allow_origins=["*"],  # Allow all origins (you can restrict this later)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Initialize Prometheus Instrumentator
+instrumentator = Instrumentator()
+instrumentator.instrument(app).expose(app, "/metrics")
 
 # Load data
 csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data_preprocessing', 'training_data.csv'))
@@ -64,10 +68,10 @@ def get_agricultural_variables_and_factors(request: DateRequest):
 
         # Sending request to IEP2 and IEP3 for prediction
         try:
-            drought_response = requests.post("http://127.0.0.1:8002/assess_drought",  json={"values": values})
+            drought_response = requests.post("http://iep2:8002/assess_drought",  json={"values": values})
             drought_class = drought_response.json()["drought_class"]
 
-            water_response = requests.post("http://127.0.0.1:8003/irrigation_need", json={"values": values})
+            water_response = requests.post("http://iep3:8003/irrigation_need", json={"values": values})
             water_result = water_response.json()["irrigation"]
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error communicating with IEPs: {e}")
@@ -81,7 +85,7 @@ def get_agricultural_variables_and_factors(request: DateRequest):
 
     else:
         # Send date to IEP1
-        response1 = requests.post("http://127.0.0.1:8001/get_features_values_at_date", json={"date": request.date})
+        response1 = requests.post("http://iep1:8001/get_features_values_at_date", json={"date": request.date})
         iep1_output = response1.json()
 
         # Convert to ordered list of values (same order as selected_features)
@@ -95,8 +99,8 @@ def get_agricultural_variables_and_factors(request: DateRequest):
         values_list = [iep1_output[key] for key in ordered_feature_keys]
 
         # Send to IEP2 and IEP3
-        response2 = requests.post("http://127.0.0.1:8002/assess_drought", json={"values": values_list})
-        response3 = requests.post("http://127.0.0.1:8003/irrigation_need", json={"values": values_list})
+        response2 = requests.post("http://iep2:8002/assess_drought", json={"values": values_list})
+        response3 = requests.post("http://iep3:8003/irrigation_need", json={"values": values_list})
 
         drought_class = response2.json().get("drought_class")
         irrigation_needed = response3.json().get("irrigation")
@@ -109,10 +113,10 @@ def get_agricultural_variables_and_factors(request: DateRequest):
         return result
 
 
-# @app.get("/", response_class=HTMLResponse)
-# def serve_frontend():
-#     html_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
-#     with open(html_file_path, "r", encoding="utf-8") as f:
-#         return f.read()
+@app.get("/", response_class=HTMLResponse)
+def serve_frontend():
+    html_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
+    with open(html_file_path, "r", encoding="utf-8") as f:
+        return f.read()
 
 #  uvicorn EEP_interface.app:app --host 127.0.0.1 --port 8004 --reload
