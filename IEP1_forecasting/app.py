@@ -30,11 +30,13 @@ class MultiOutputLSTM(nn.Module):
 # Initialize app
 app = FastAPI(title="Weather & Water Features Forecast API")
 
-# Load data and model components
-csv_path = os.path.join("model_and_data", "training_data.csv")
+import requests, io
 
-# Load the CSV
-df = pd.read_csv(csv_path)
+file_id = "18TVcyEyQlBELKKVQm6BQnPTA8U7_Ec2a"
+url = f"https://drive.google.com/uc?export=download&id={file_id}"
+response = requests.get(url)
+df = pd.read_csv(io.StringIO(response.text))
+
 df["date"] = pd.to_datetime(df["date"])
 
 selected_features = ["aet", "def", "pdsi", "pet", "pr", "ro", "soil", "srad", "swe", "tmmn", "tmmx", "vap", "vpd", "vs"]

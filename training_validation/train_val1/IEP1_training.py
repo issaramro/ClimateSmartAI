@@ -43,11 +43,13 @@ class MultiOutputLSTM(nn.Module):
         lstm_out, _ = self.lstm(x)
         return self.fc(lstm_out[:, -1, :])
     
-# Load data and model components
-base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-csv_path = os.path.join(base_path, 'data_preprocessing', 'training_data.csv')
-# Load the CSV
-df = pd.read_csv(csv_path)
+import requests, io
+
+file_id = "18TVcyEyQlBELKKVQm6BQnPTA8U7_Ec2a"
+url = f"https://drive.google.com/uc?export=download&id={file_id}"
+response = requests.get(url)
+df = pd.read_csv(io.StringIO(response.text))
+
 df["date"] = pd.to_datetime(df["date"])
 selected_features = ["aet", "def", "pdsi", "pet", "pr", "ro", "soil", "srad", "swe", "tmmn", "tmmx", "vap", "vpd", "vs"]
 features_names = ["Actual Evapotranspiration (mm)", "Climate Water Deficit (mm)", "Palmer Drought Severity Index", "Reference Evapotranspiration (mm)",

@@ -24,9 +24,13 @@ app.add_middleware(
 instrumentator = Instrumentator()
 instrumentator.instrument(app).expose(app, "/metrics")
 
-# Load data
-csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data_preprocessing', 'training_data.csv'))
-df = pd.read_csv(csv_path)
+import requests, io
+
+file_id = "18TVcyEyQlBELKKVQm6BQnPTA8U7_Ec2a"
+url = f"https://drive.google.com/uc?export=download&id={file_id}"
+response = requests.get(url)
+df = pd.read_csv(io.StringIO(response.text))
+
 df["date"] = pd.to_datetime(df["date"])
 
 selected_features = ["aet", "def", "pdsi", "pet", "pr", "ro", "soil", "srad", "swe", "tmmn", "tmmx", "vap", "vpd", "vs"]
@@ -79,7 +83,7 @@ def get_agricultural_variables_and_factors(request: DateRequest):
         result = {
             **{features_names[i]: float(values[i]) for i in range(len(features_names))},
             "Drought condition": label_map[drought_class],
-            "Irrigation prediction": "Irrigation needed" if drought_class in [2, 3] else water_result
+            "Irrigation prediction": "Severe rrigation needed" if drought_class in [3] else water_result
         }
         return result
 
@@ -118,5 +122,3 @@ def serve_frontend():
     html_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
     with open(html_file_path, "r", encoding="utf-8") as f:
         return f.read()
-
-#  uvicorn EEP_interface.app:app --host 127.0.0.1 --port 8004 --reload

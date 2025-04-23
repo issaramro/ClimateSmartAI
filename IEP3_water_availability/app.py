@@ -17,8 +17,10 @@ def predict_water_availability(model, input_vector):
  
      if prediction == 0:
          return "No irrigation needed"
+     elif prediction == 1:
+         return "Mild irrigiation needed"
      else:
-         return "Irrigation needed"
+         return "Severe irrigation needed"
 
 # Initialize FastAPI app
 app = FastAPI(title="Water Availability Assessment API")
@@ -35,5 +37,3 @@ class ClimateVector(BaseModel):
 def irrigation_need(request: ClimateVector):
     result = predict_water_availability(model, request.values)
     return {"irrigation": result}
-
-#uvicorn IEP3_water_availability.app:app --host 127.0.0.1 --port 8003 --reload

@@ -25,7 +25,7 @@
       resultDiv.innerHTML = "Loading...";
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/Get Agricultural Variables & Factors/", {
+        const response = await fetch("http://localhost:8004/get_agricultural_variables_and_factors", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
