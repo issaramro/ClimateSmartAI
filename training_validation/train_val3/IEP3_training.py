@@ -19,11 +19,12 @@ def classify_water_availability(row):
     else:
         return 2  # Severe irrigation need
     
-# Load the cleaned dataset
-base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-csv_path = os.path.join(base_path, 'data_preprocessing', 'training_data.csv')
-# Load the CSV
-data = pd.read_csv(csv_path)
+import requests, io
+
+file_id = "18TVcyEyQlBELKKVQm6BQnPTA8U7_Ec2a"
+url = f"https://drive.google.com/uc?export=download&id={file_id}"
+response = requests.get(url)
+data = pd.read_csv(io.StringIO(response.text))
 
 data["irrigation_need"] = data.apply(classify_water_availability, axis=1)
 

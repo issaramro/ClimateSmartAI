@@ -13,11 +13,12 @@ def classify_drought(pdsi):
     else:
         return 0  # No drought
     
-# Load the cleaned dataset
-base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-csv_path = os.path.join(base_path, 'data_preprocessing', 'training_data.csv')
-# Load the CSV
-data = pd.read_csv(csv_path)
+import requests, io
+
+file_id = "18TVcyEyQlBELKKVQm6BQnPTA8U7_Ec2a"
+url = f"https://drive.google.com/uc?export=download&id={file_id}"
+response = requests.get(url)
+data = pd.read_csv(io.StringIO(response.text))
 
 data["drought_class"] = data["pdsi"].apply(classify_drought)
 

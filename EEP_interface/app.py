@@ -83,7 +83,7 @@ def get_agricultural_variables_and_factors(request: DateRequest):
         result = {
             **{features_names[i]: float(values[i]) for i in range(len(features_names))},
             "Drought condition": label_map[drought_class],
-            "Irrigation prediction": "Severe rrigation needed" if drought_class in [3] else water_result
+            "Irrigation prediction": "Severe irrigation needed" if drought_class in [3] else water_result
         }
         return result
 
@@ -112,7 +112,7 @@ def get_agricultural_variables_and_factors(request: DateRequest):
         result = {
             **{features_names[i]: float(values_list[i]) for i in range(len(features_names))},
             "Drought condition": label_map[drought_class],
-            "Irrigation prediction": "Irrigation needed" if drought_class in [2, 3] else irrigation_needed
+            "Irrigation prediction": "Severe irrigation needed" if drought_class in [2, 3] else irrigation_needed
         }
         return result
 
