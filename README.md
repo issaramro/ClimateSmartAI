@@ -49,8 +49,8 @@ project_ai/
 1. **Clone the Repository**
 
 ```bash
-git clone https://github.com/your-username/project_ai.git
-cd project_ai
+git clone git@github.com:issaramro/ClimateSmartAI.git
+cd ClimateSmartAI
 ```
 
 2. **Build Docker Containers**
@@ -70,8 +70,7 @@ docker-compose up
 Open your browser and visit:
 
 ```
-http://localhost:8004  # EEP API (FastAPI docs)
-http://localhost:3000  # If UI is hosted separately
+http://localhost:8004  # UI
 ```
 
 ---
@@ -126,7 +125,6 @@ Access the deployed system here:
 - **FastAPI** for endpoints  
 - **Docker & Docker Compose** for containerization  
 - **Prometheus** for monitoring  
-- **MLflow** for experiment tracking (optional future step)  
 - **Azure** for cloud deployment
 
 ---
