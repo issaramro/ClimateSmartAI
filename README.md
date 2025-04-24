@@ -1,6 +1,16 @@
-# AI-Powered Climate & Drought Risk Management Platform
+# 🌿 ClimateSmartAI: AI-Powered Climate Forecasting and Agricultural Assessment for Lebanon
 
-This project is a modular, containerized platform built to forecast climate variables, assess drought risk, and manage water availability. Designed with real-world impact in mind, the system is structured around three independent AI pipelines (IEPs) coordinated by an external ensemble endpoint (EEP). It uses MLOps principles, Docker, and cloud deployment via Azure.
+This project is a containerized platform built to forecast climate variables, assess drought risk, and manage water availability. Designed with real-world impact in mind, the system is structured around three independent AI pipelines (IEPs) coordinated by an external ensemble endpoint (EEP). It uses MLOps principles, Docker, and cloud deployment via Azure.
+
+---
+
+## 🌍 Data Source (Google Earth Engine)
+
+The raw climate data used for training and forecasting was sourced from **Google Earth Engine (GEE)**, a cloud-based platform for planetary-scale geospatial analysis.
+
+We extracted the data of **Baalbek/Hermel, Lebanon - region**, from **1975 to 2024**, and was exported in CSV format for further preprocessing.
+
+🔗 [Learn more about the data here]([https://earthengine.google.com/](https://developers.google.com/earth-engine/datasets/catalog/IDAHO_EPSCOR_TERRACLIMATE))
 
 ---
 
@@ -14,6 +24,7 @@ project_ai/
 ├── IEP3_water_availability/  # Regression model for water availability
 ├── EEP_interface/            # FastAPI interface to connect IEPs
 ├── prometheus.yml            # Prometheus config for metrics
+├── README.md                 # README file
 └── docker-compose.yml        # Docker Compose file to run the platform
 ```
 
@@ -132,17 +143,16 @@ Access the deployed system here:
 ## 📘 Future Work
 
 - Integrate MLflow for live experiment tracking  
-- Add user authentication & authorization  
-- Expand to real-time sensor data ingestion
+- Add a chatbot fine-tuned for this field
 
 ---
 
 ## 👨‍🎓 Academic Notes
 
-This project was developed for educational purposes in an advanced AI systems course. It meets all MLOps, testing, and deployment requirements and demonstrates practical business value in climate and water management.
+This project was developed for educational purposes in the AI in Industry course. It meets all MLOps, testing, and deployment requirements and demonstrates practical business value in climate and water management.
 
 ---
 
-## 📫 Contact
+## 🙋‍♂️ Contributors
 
-For feedback or questions, feel free to reach out via GitHub issues or email us at your.email@example.com
+Alaa Aoun & Issar Amro
