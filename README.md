@@ -1,6 +1,8 @@
 # 🌿 ClimateSmartAI: AI-Powered Climate Forecasting and Agricultural Assessment for Lebanon
+Lebanon has what many countries envy: diverse climates, fertile valleys, and a rich agriculture. But despite this natural advantage, farmers are struggling due to unpredictable weather, limited access to data, and poor planning tools. That’s why we created a tool focused on supporting farmers and agribusinesses. By providing timely, data-driven insights, we help them make better decisions about planting, irrigation, and crop planning—ultimately building resilience in their work and contributing to national food sovereignty.
+We believe that empowering farmers through technology is not just good business; it’s a necessity for Lebanon’s future.
 
-This project is a containerized platform built to forecast climate variables, assess drought risk, and manage water availability. Designed with real-world impact in mind, the system is structured around three independent AI pipelines (IEPs) coordinated by an external ensemble endpoint (EEP). It uses MLOps principles, Docker, and cloud deployment via Azure.
+This project is built to forecast climate variables, assess drought risk, and manage water availability. Designed with real-world impact in mind, the system is structured around three independent IEPs coordinated by an external ensemble endpoint (EEP). It uses MLOps principles, Docker, and cloud deployment via Azure.
 
 ---
 
@@ -18,11 +20,11 @@ We extracted the data of **Baalbek/Hermel, Lebanon - region**, from **1975 to 20
 
 ```
 project_ai/
-├── data_preprocessing/       # Scripts & CSVs for raw/cleaned data
+├── data_preprocessing/       # To get cleaned data
 ├── IEP1_forecasting/         # LSTM model for climate forecasting
-├── IEP2_drought_assessment/  # Classification model for drought risk (PDSI)
-├── IEP3_water_availability/  # Regression model for water availability
-├── EEP_interface/            # FastAPI interface to connect IEPs
+├── IEP2_drought_assessment/  # RandomForest model for drought risk
+├── IEP3_water_availability/  # RandomForest model for water necessity
+├── EEP_interface/            # FastAPI interface to communicate with IEPs
 ├── prometheus.yml            # Prometheus config for metrics
 ├── README.md                 # README file
 └── docker-compose.yml        # Docker Compose file to run the platform
@@ -33,7 +35,7 @@ project_ai/
 ## Features
 
 - **IEP1: Climate Forecasting**  
-  LSTM model predicts climate variables up to a user-specified date based on historical data.
+  LSTM model predicts climate variables up to a user-specified date based on historical data. It uses the previous 5 years to predict the next month. If the date entered by the user is a past date within the dataset, the output will be the values in the dataset itself. 
 
 - **IEP2: Drought Risk Assessment**  
  RandomForest model and then threshold-based labeling, useing PDSI as a label, to evaluate drought severity.
@@ -42,7 +44,7 @@ project_ai/
   RandomForest model and then threshold-based labeling to guide water resource planning.
 
 - **EEP (External Ensemble Pipeline)**  
-  Coordinates all IEPs, provides unified access through API or UI, and is fully containerized.
+  Coordinates all IEPs, provides unified access through API and UI, and is fully containerized.
 
 - **Monitoring with Prometheus**  
   Tracks real-time model activity and API health.
