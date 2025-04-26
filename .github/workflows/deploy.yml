@@ -1,0 +1,128 @@
+name: EEP Health Check and Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      TEST_DATE: "01-08-2024"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Start Docker Compose
+        run: |
+          docker-compose up -d --build
+          sleep 30  # Give services time to start
+
+      - name: Health Check - Send Request
+        run: |
+          echo '{ "date": "${{ env.TEST_DATE }}" }' > request.json
+          curl -s -X POST http://localhost:8000/get_agricultural_variables_and_factors \
+            -H "Content-Type: application/json" \
+            -d @request.json -o response.json
+
+      - name: Compare with Expected Response
+        run: |
+          pip install deepdiff
+          python3 <<EOF
+          import json
+          from deepdiff import DeepDiff
+
+          with open("expected_response.json") as f:
+              expected = json.load(f)
+          with open("response.json") as f:
+              actual = json.load(f)
+
+          diff = DeepDiff(expected, actual, ignore_order=True, significant_digits=2)
+          if diff:
+              print("❌ Response does not match expected!")
+              print(diff)
+              exit(1)
+          else:
+              print("✅ Health check passed.")
+          EOF
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.issaramro }}
+          password: ${{ secrets.Charlie1991puth@@ }}
+
+      - name: Tag and Push Docker Images
+        run: |
+          docker tag eep YOUR_DOCKER_USERNAME/eep:latest
+          docker tag iep1 YOUR_DOCKER_USERNAME/iep1:latest
+          docker tag iep2 YOUR_DOCKER_USERNAME/iep2:latest
+          docker tag iep3 YOUR_DOCKER_USERNAME/iep3:latest
+
+          docker push YOUR_DOCKER_USERNAME/eep:latest
+          docker push YOUR_DOCKER_USERNAME/iep1:latest
+          docker push YOUR_DOCKER_USERNAME/iep2:latest
+          docker push YOUR_DOCKER_USERNAME/iep3:latest
+
+      # ---------------------------
+      # 🔵 Deploy to Azure
+      # ---------------------------
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set up Azure CLI extensions
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+          az extension add --name containerapp --upgrade
+
+      - name: Create Resource Group (if not exists)
+        run: |
+          az group create --name my-resource-group --location eastus
+
+      - name: Create Container App Environment (if not exists)
+        run: |
+          az containerapp env create \
+            --name my-container-env \
+            --resource-group my-resource-group \
+            --location eastus
+
+      - name: Deploy Docker Compose to Azure Container Apps
+        run: |
+          az containerapp compose create \
+            --name my-container-app \
+            --resource-group my-resource-group \
+            --environment my-container-env \
+            --compose-file docker-compose.yml
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure
+        run: |
+          echo "Deploying to Azure..."
+
+          az config set extension.use_dynamic_install=yes_without_prompt
+
+          # Update the container app with your latest image
+          az containerapp update \
+            --name <YOUR_CONTAINER_APP_NAME> \
+            --resource-group <YOUR_RESOURCE_GROUP> \
+            --image your-dockerhub-username/your-image-name:latest
