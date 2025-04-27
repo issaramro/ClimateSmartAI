@@ -26,6 +26,8 @@ instrumentator.instrument(app).expose(app, "/metrics")
 
 import requests, io
 
+# we load the training data set because we need to access the last 5 years
+# and start forecasting from there up until the input date
 file_id = "18TVcyEyQlBELKKVQm6BQnPTA8U7_Ec2a"
 url = f"https://drive.google.com/uc?export=download&id={file_id}"
 response = requests.get(url)
@@ -62,9 +64,8 @@ def get_agricultural_variables_and_factors(request: DateRequest):
         raise HTTPException(status_code=400, detail="Date format must be DD-MM-YYYY.")
 
     last_date = df_selected["date"].max()
-
-        # Send date to IEP1
-    response1 = requests.post("http://iep1:8001/get_features_values_at_date", json={"date": request.date})
+    # Send date to IEP1
+    response1 = requests.post("https://iep1.internal.ashyglacier-8124679b.eastus.azurecontainerapps.io/get_features_values_at_date", json={"date": request.date})
     iep1_output = response1.json()
 
     # Convert to ordered list of values (same order as selected_features)
@@ -78,8 +79,8 @@ def get_agricultural_variables_and_factors(request: DateRequest):
     values_list = [iep1_output[key] for key in ordered_feature_keys]
 
     # Send to IEP2 and IEP3
-    response2 = requests.post("http://iep2:8002/assess_drought", json={"values": values_list})
-    response3 = requests.post("http://iep3:8003/irrigation_need", json={"values": values_list})
+    response2 = requests.post("https://iep2.internal.ashyglacier-8124679b.eastus.azurecontainerapps.io/assess_drought", json={"values": values_list})
+    response3 = requests.post("https://iep3.internal.ashyglacier-8124679b.eastus.azurecontainerapps.io/irrigation_need", json={"values": values_list})
 
     drought_class = response2.json().get("drought_class")
     irrigation_needed = response3.json().get("irrigation")
@@ -92,6 +93,7 @@ def get_agricultural_variables_and_factors(request: DateRequest):
     return result
 
 
+# html ui
 @app.get("/", response_class=HTMLResponse)
 def serve_frontend():
     html_file_path = os.path.join(os.path.dirname(__file__), 'index.html')

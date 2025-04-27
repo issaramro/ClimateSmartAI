@@ -36,5 +36,3 @@ def assess_drought(data: FullClimateVector):
         "drought_class": drought_class,
         "drought_label": label_map[drought_class]
     }
-
-# uvicorn app:app --host 127.0.0.1 --port 8002 --reload

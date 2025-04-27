@@ -27,7 +27,7 @@ jobs:
       - name: Health Check - Send Request
         run: |
           echo '{ "date": "${{ env.TEST_DATE }}" }' > request.json
-          curl -s -X POST http://localhost:8000/get_agricultural_variables_and_factors \
+          curl -s -X POST https://eep.ashyglacier-8124679b.eastus.azurecontainerapps.io/get_agricultural_variables_and_factors\
             -H "Content-Type: application/json" \
             -d @request.json -o response.json
 
@@ -60,69 +60,12 @@ jobs:
 
       - name: Tag and Push Docker Images
         run: |
-          docker tag eep YOUR_DOCKER_USERNAME/eep:latest
-          docker tag iep1 YOUR_DOCKER_USERNAME/iep1:latest
-          docker tag iep2 YOUR_DOCKER_USERNAME/iep2:latest
-          docker tag iep3 YOUR_DOCKER_USERNAME/iep3:latest
+          docker tag eep issaramro/eep:latest
+          docker tag iep1 issaramro/iep1:latest
+          docker tag iep2 issaramro/iep2:latest
+          docker tag iep3 issaramro/iep3:latest
 
-          docker push YOUR_DOCKER_USERNAME/eep:latest
-          docker push YOUR_DOCKER_USERNAME/iep1:latest
-          docker push YOUR_DOCKER_USERNAME/iep2:latest
-          docker push YOUR_DOCKER_USERNAME/iep3:latest
-
-      # ---------------------------
-      # 🔵 Deploy to Azure
-      # ---------------------------
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Set up Azure CLI extensions
-        run: |
-          az config set extension.use_dynamic_install=yes_without_prompt
-          az extension add --name containerapp --upgrade
-
-      - name: Create Resource Group (if not exists)
-        run: |
-          az group create --name my-resource-group --location eastus
-
-      - name: Create Container App Environment (if not exists)
-        run: |
-          az containerapp env create \
-            --name my-container-env \
-            --resource-group my-resource-group \
-            --location eastus
-
-      - name: Deploy Docker Compose to Azure Container Apps
-        run: |
-          az containerapp compose create \
-            --name my-container-app \
-            --resource-group my-resource-group \
-            --environment my-container-env \
-            --compose-file docker-compose.yml
-
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure
-        run: |
-          echo "Deploying to Azure..."
-
-          az config set extension.use_dynamic_install=yes_without_prompt
-
-          # Update the container app with your latest image
-          az containerapp update \
-            --name <YOUR_CONTAINER_APP_NAME> \
-            --resource-group <YOUR_RESOURCE_GROUP> \
-            --image your-dockerhub-username/your-image-name:latest
+          docker push issaramro/eep:latest
+          docker push issaramro/iep1:latest
+          docker push issaramro/iep2:latest
+          docker push issaramro/iep3:latest
