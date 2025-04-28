@@ -1,22 +1,37 @@
 import pandas as pd
-import joblib
+import joblib  
 import matplotlib.pyplot as plt
 import requests
 import io
-import pickle
 import os
 from sklearn.metrics import classification_report
 
+
+def classify_drought(pdsi):
+    if pdsi <= -4:
+        return 3  # Extreme drought
+    elif pdsi <= -3:
+        return 2  # Severe drought
+    elif pdsi <= -2:
+        return 1  # Moderate drought
+    else:
+        return 0  # No drought
+
+        
 # Load test dataset (from Google Drive)
 file_id_test = "1BviGhRNY1EaH--YUfVB8xqibN3fnSktU"
 url_test = f"https://drive.google.com/uc?export=download&id={file_id_test}"
 response_test = requests.get(url_test)
 df_test = pd.read_csv(io.StringIO(response_test.text))
+df_test["drought_class"] = df_test["pdsi"].apply(classify_drought)
 
-# Load the pre-trained model 
-base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))  
+
+# Load the pre-trained model using PICKLE instead of joblib
+base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 model_path = os.path.join(base_dir, 'IEP2_drought_assessment', 'model', 'drought_model.pkl')
+
 clf = joblib.load(model_path)
+
 
 # Prepare the test data 
 features = ["aet", "def", "pet", "pr", "ro", "soil", "srad", "swe", 
@@ -26,11 +41,11 @@ X_test = df_test[features]
 # Make predictions 
 y_pred = clf.predict(X_test)
 
-# Inverse transform or get true labels
-# Assuming that "drought_class" is the target variable in df_test (you may need to adjust)
+# True labels
 y_true = df_test["drought_class"].values
 
 # Plotting the results
+current_dir = os.path.dirname(__file__)  
 output_dir = os.path.join(current_dir, 'testing_plots')
 os.makedirs(output_dir, exist_ok=True)
 
@@ -47,6 +62,5 @@ plt.tight_layout()
 # Save plot
 plt.savefig(os.path.join(output_dir, "drought_classification_test.png"))
 plt.close()
-
 
 print("Testing complete and results saved!")
