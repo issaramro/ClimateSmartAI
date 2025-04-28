@@ -152,7 +152,7 @@ docker push issaramro/climatesmartai-eep
 - Configure ingress (HTTP, port 8004).
 - Attach Docker Hub images.
 
-🔗 Deployment Paused (Due to Costs): See [Demo Video]([https://drive.google.com/drive/folders/19AYOqcLBMoMgqBZworMN_wgOyXXZHXM6](https://drive.google.com/file/d/18QmXfkfeDHtxy86cNzBuoitY77JOwpkj/view)) for live walkthrough.
+🔗 Deployment Paused (Due to Costs): See [Demo Video](https://drive.google.com/file/d/18QmXfkfeDHtxy86cNzBuoitY77JOwpkj/view) for live walkthrough.
 
 ---
 
