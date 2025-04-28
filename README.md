@@ -84,6 +84,18 @@ project_ai/
 └── docker-compose.yml         # Multi-container deployment
 ```
 ---
+## 📶Results
+
+After running the training and testing scripts, the generated validation and testing plots can be found in the following directories:
+
+- Validation plots: `train_val_test/train_val_test1/validation_plots/`
+- Testing plots: `train_val_test/train_val_test1/testing_plots/`
+
+This is to assess model performance.
+
+Note: The paths mentioned above are used to check the validation and testing plots of IEP1. To check those of IEP2 or IEP3, go to `train_val_test2` or `train_val_test3`, respectively.
+
+---
 ## 👨‍💻 Pipeline Workflow
 1. **User Input:** Date via EEP API.
 2. **IEP Execution:** Parallel model inference.
