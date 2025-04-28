@@ -16,6 +16,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"  
+
+      - name: Install dependencies for unit tests
+        run: |
+          pip install -r requirements.txt 
+          pip install pytest            
+         
+
+      - name: Run unit tests for IEP1
+        run: |
+          cd IEP1_forecasting           
+          pytest test.py                
+
+      - name: Run unit tests for IEP2
+        run: |
+          cd IEP2_drought_assessment   
+          pytest test.py               
+
+      - name: Run unit tests for IEP3
+        run: |
+          cd IEP3_water_availability   
+          pytest test.py                
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
