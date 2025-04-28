@@ -143,8 +143,8 @@ docker-compose build && docker-compose up
 1. **Push Images to Docker Hub:**
 
 ```bash
-docker tag climatesmartai-eep yourusername/climatesmartai-eep  
-docker push yourusername/climatesmartai-eep
+docker tag climatesmartai-eep issaramro/climatesmartai-eep  
+docker push issaramro/climatesmartai-eep
 ```
 
 2. **Azure Setup:**
