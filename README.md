@@ -8,7 +8,7 @@
 2. [Project Overview](#-project-overview)  
 3. [Data Source & Preprocessing](#-data-source--preprocessing)  
 4. [System Architecture](#system-architecture)
-5. [Results of validation & Testing](#-results)
+5. [Results](#-results)
 6. [Pipeline Workflow](#-pipeline-workflow)  
 7. [AI Pipelines (IEPs)](#-ai-pipelines-ieps)  
 8. [Deployment (Local & Azure)](#-deployment)  
@@ -85,7 +85,7 @@ project_ai/
 └── docker-compose.yml         # Multi-container deployment
 ```
 ---
-## 📶Results
+## ✔️ Results
 
 After running the training and testing scripts, the generated validation and testing plots can be found in the following directories:
 
