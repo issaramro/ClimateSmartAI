@@ -143,14 +143,23 @@ docker-compose build && docker-compose up
 1. **Push Images to Docker Hub:**
 
 ```bash
-docker tag climatesmartai-eep issaramro/climatesmartai-eep  
-docker push issaramro/climatesmartai-eep
+docker tag iep1 issaramro/iep1  
+docker push issaramro/iep1
+
+docker tag iep2 issaramro/iep2  
+docker push issaramro/iep2
+
+docker tag iep3 issaramro/iep3  
+docker push issaramro/iep3
+
+docker tag eep issaramro/eep  
+docker push issaramro/eep
 ```
 
 2. **Azure Setup:**
 - Create Container App in Azure Portal.
 - Configure ingress (HTTP, port 8004).
-- Attach Docker Hub images.
+- Attach Docker Hub images (ieps: internal, eep: external).
 
 🔗 Deployment Paused (Due to Costs): See [Demo Video](https://drive.google.com/file/d/18QmXfkfeDHtxy86cNzBuoitY77JOwpkj/view) for live walkthrough.
 
