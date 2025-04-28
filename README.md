@@ -8,16 +8,17 @@
 2. [Project Overview](#-project-overview)  
 3. [Data Source & Preprocessing](#-data-source--preprocessing)  
 4. [System Architecture](#system-architecture)
-5. [Pipeline Workflow](#-pipeline-workflow)  
-6. [AI Pipelines (IEPs)](#-ai-pipelines-ieps)  
-7. [Deployment (Local & Azure)](#-deployment)  
-8. [CI/CD Pipeline](#-cicd-pipeline) 
-9. [Monitoring & Logging](#-monitoring--logging)  
-10. [Testing & Validation](#-testing--validation)  
-11. [Future Work](#-future-work)
-12. [Presentation](#-project-presentation) 
-13. [Demo Video](#-demo-video)  
-14. [Contributors](#-contributors)  
+5. [Results of validation & Testing](-results)
+6. [Pipeline Workflow](#-pipeline-workflow)  
+7. [AI Pipelines (IEPs)](#-ai-pipelines-ieps)  
+8. [Deployment (Local & Azure)](#-deployment)  
+9. [CI/CD Pipeline](#-cicd-pipeline) 
+10. [Monitoring & Logging](#-monitoring--logging)  
+11. [Testing & Validation](#-testing--validation)  
+12. [Future Work](#-future-work)
+13. [Presentation](#-project-presentation) 
+14. [Demo Video](#-demo-video)  
+15. [Contributors](#-contributors)  
 
 ---
 
@@ -64,12 +65,12 @@ We believe that empowering farmers through technology is not just good business;
 - `vpd (kPa)`: Vapor pressure deficit
 - `vs (m/s)`: Wind speed at 10m
 
-### Preprocessing Steps  
-1. **Cleaning**: Handle missing values, normalize scales.  
-2. **Feature Engineering**: Rolling averages for temporal trends.  
-3. **Splitting**: 80% training, 20% testing (time-series aware).  
+### Preprocessing Steps 
+1. **Choosing the region**: Choosing Bekaa/Hermel area.
+2. **Cleaning**: Handle missing values and scaling features (according to the scales written on the dataset website).
+3. **Splitting datasets**: Split the clean dataset into training and testing CSVs.  
 
-🔗 **Download Cleaned Dataset**: [Google Drive](https://drive.google.com/drive/folders/19AYOqcLBMoMgqBZworMN_wgOyXXZHXM6)  
+🔗 **Check Cleaned Datasets**: [Google Drive](https://drive.google.com/drive/folders/19AYOqcLBMoMgqBZworMN_wgOyXXZHXM6)  
 
 ---
 
@@ -107,16 +108,18 @@ Note: The paths mentioned above are used to check the validation and testing plo
 
 ### 1. IEP1: Climate Forecasting
 - **Model:** LSTM.
-- **Input:** Historical climate data.
-- **Output:** If user enters a past date, it outputs what's in the dataset. Otherwise, it outputs forecasted values of features.
+- **Input:** a data.
+- **Output:** If the user enters a past date, it outputs what's in the dataset. Otherwise, it outputs forecasted values of features.
 
 ### 2. IEP2: Drought Risk Assessment
 - **Model:** RandomForest + PDSI thresholds.
-- **Classes:** Extreme, Severe, Moderate, or no drought.
+- **Input:** a vector of features.
+- **Output:** Extreme, Severe, Moderate, or no drought.
 
 ### 3. IEP3: Water Availability
-- **Model:** RandomForest and threshold classification (using soil moisture, precipitation, actual and reference evapotranspiration, and snow water equivalent.
-- **Output:** No, mild, or severe irregation needed.
+- **Model:** RandomForest and threshold classification (using soil moisture, precipitation, actual and reference evapotranspiration, and snow water equivalent).
+- **Input:** a vector of features.
+- **Output:** No, mild, or severe irrigation needed.
 
 ---
 
@@ -138,14 +141,11 @@ docker-compose build && docker-compose up
 1. **Push Images to Docker Hub:**
 
 ```bash
-Copy
-Edit
 docker tag climatesmartai-eep yourusername/climatesmartai-eep  
 docker push yourusername/climatesmartai-eep
 ```
 
 2. **Azure Setup:**
-
 - Create Container App in Azure Portal.
 - Configure ingress (HTTP, port 8004).
 - Attach Docker Hub images.
@@ -158,11 +158,10 @@ docker push yourusername/climatesmartai-eep
 
 We implemented Continuous Integration and Continuous Deployment (CI/CD) using **GitHub Actions**.
 
-- Automated testing triggered on every pull request and push.
+- Automated testing is triggered on every pull request and push.
 - Docker images are automatically built and pushed to Docker Hub upon merging to `main`.
 - Azure Container Apps are updated with the new images.
-
-GitHub Actions ensures faster, more reliable deployments and reduces manual errors.
+- Automated unit testing for each IEP.
 
 ---
 
