@@ -108,7 +108,7 @@ Note: The paths mentioned above are used to check the validation and testing plo
 
 ### 1. IEP1: Climate Forecasting
 - **Model:** LSTM.
-- **Input:** a data.
+- **Input:** a date.
 - **Output:** If the user enters a past date, it outputs what's in the dataset. Otherwise, it outputs forecasted values of features.
 
 ### 2. IEP2: Drought Risk Assessment
