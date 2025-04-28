@@ -172,7 +172,7 @@ GitHub Actions ensures faster, more reliable deployments and reduces manual erro
 
 ## 🎥 Project Presentation
 
-Watch the full project presentation here:
+You can access our slides here:
 
 🔗 [View Presentation](https://docs.google.com/presentation/d/1D179VhgXpdXSF_OhqeMbrBWd0Zb-eSMWYt5yXKLWuLg/edit?usp=sharing)
 
