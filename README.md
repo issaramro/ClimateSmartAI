@@ -157,9 +157,9 @@ docker push issaramro/eep
 ```
 
 2. **Azure Setup:**
-- Create Container App in Azure Portal.
-- Configure ingress (HTTP, port 8004).
-- Attach Docker Hub images (ieps: internal, eep: external).
+- Create Container App in Azure Portal (we used Azure Container Apps).
+- Configure ingress (modify links of the requests inside the eep app.py to match the Azure internal links of the ieps, since the eep sends requests to the ieps on the running servers).
+- Attach Docker Hub images.
 
 🔗 Deployment Paused (Due to Costs): See [Demo Video](https://drive.google.com/file/d/18QmXfkfeDHtxy86cNzBuoitY77JOwpkj/view) for live walkthrough.
 
