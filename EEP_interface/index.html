@@ -25,7 +25,7 @@
       resultDiv.innerHTML = "Loading...";
 
       try {
-        const response = await fetch("http://localhost:8004/get_agricultural_variables_and_factors", {
+        const response = await fetch("https://eep.ashyglacier-8124679b.eastus.azurecontainerapps.io/get_agricultural_variables_and_factors", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

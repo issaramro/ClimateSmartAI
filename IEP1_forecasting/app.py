@@ -50,7 +50,7 @@ features_names = [
 df_selected = df[["date"] + selected_features].copy()
 
 # Load scaler
-with open("model_and_data/scaler.pkl", "rb") as f:
+with open("model/scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
 
 # Load model
@@ -60,7 +60,7 @@ num_layers = 2
 output_size = len(selected_features)
 
 model = MultiOutputLSTM(input_size, hidden_size, num_layers, output_size)
-model.load_state_dict(torch.load("model_and_data/multi_output_lstm.pth", map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("model/multi_output_lstm.pth", map_location=torch.device('cpu')))
 model.eval()
 
 # Request model
@@ -102,10 +102,3 @@ def get_features_values_at_date(request: DateRequest):
 
         return {features_names[i]: float(final_prediction[i]) for i in range(len(features_names))}
 
-
-import uvicorn
-
-if __name__ == "__main__":
-    uvicorn.run("app:app", host="127.0.0.1", port=8001)
-
-# uvicorn app:app --host  0.0.0.0 --port 8001 --reload

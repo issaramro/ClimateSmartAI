@@ -1,0 +1,18 @@
+{
+    "Actual Evapotranspiration (mm)": 0.81223626893744,
+    "Climate Water Deficit (mm)": 211.20824077300185,
+    "Palmer Drought Severity Index": -0.9836446381123818,
+    "Reference Evapotranspiration (mm)": 210.27005278314448,
+    "Precipitation Accumulation (mm)": -0.9616705523861999,
+    "Runoff (mm)": -2.107980677394937,
+    "Soil Moisture (mm)": 8.8621628580765,
+    "Downward Surface Shortwave Radiation (W/m²)": 300.3152227760264,
+    "Snow Water Equivalent (mm)": -1.6900518993342748,
+    "Minimum Temperature (°C)": 17.95541344438943,
+    "Maximum Temperature (°C)": 32.233801369123384,
+    "Vapor Pressure (kPa)": 1.2608879781731803,
+    "Vapor Pressure Deficit (kPa)": 2.1315833060824128,
+    "Wind Speed at 10m (m/s)": 3.408380667732917,
+    "Drought condition": "Severe Drought",
+    "Irrigation prediction": "Severe irrigation needed"
+  }
